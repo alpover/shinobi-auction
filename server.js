@@ -64,8 +64,25 @@ function finishAuction(room, label) {
   broadcast(room);
   setTimeout(() => { if (!room.gameOver) startAuction(room); }, 750);
 }
+function restartRoom(room) {
+  if (!room || !room.players[0] || !room.players[1]) return;
+  room.players = room.players.map(player => ({ name: player.name, budget: 20, team: [] }));
+  room.characterPool = shuffle(characters);
+  room.currentCharacter = null;
+  room.auctionNumber = 0;
+  room.history = [];
+  room.gameOver = false;
+  room.locked = false;
+  room.starterPlayer = Math.random() < 0.5 ? 0 : 1;
+  room.turnPlayer = 0;
+  room.currentBid = 0;
+  room.currentBidder = 0;
+  startAuction(room);
+}
 function action(room, playerIndex, type) {
-  if (!room || room.gameOver || room.locked || room.players[playerIndex] == null) return;
+  if (!room || room.players[playerIndex] == null) return;
+  if (type === 'restart') { if (room.gameOver) restartRoom(room); return; }
+  if (room.gameOver || room.locked) return;
   if (room.turnPlayer !== playerIndex) return;
   const player = room.players[playerIndex];
   if (type === 'raise') {
